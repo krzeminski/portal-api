@@ -1,9 +1,7 @@
 package com.example.portalapi.entity;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -44,7 +42,7 @@ public class Note {
     @UpdateTimestamp
     private Date updateDate;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+//    @ToString.Exclude
     private User user;
 }
