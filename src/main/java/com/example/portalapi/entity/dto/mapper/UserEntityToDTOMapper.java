@@ -10,6 +10,15 @@ public class UserEntityToDTOMapper {
     }
 
     public static UserDTO convertToUserDTO(User user) {
-        return new UserDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getUsername(), user.getEmail(), user.getProfileImageUrl(), user.getJoinDate(), user.getRole().toString());
+        return new UserDTO(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfileImageUrl(),
+                user.getJoinDate(),
+                user.getRole().toString(),
+                user.getAwards());
     }
 }

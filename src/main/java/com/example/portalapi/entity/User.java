@@ -52,6 +52,7 @@ public class User {
     private String email;
 
     @Column(name = "password")
+    @JsonIgnore
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 

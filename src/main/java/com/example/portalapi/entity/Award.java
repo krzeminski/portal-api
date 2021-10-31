@@ -1,5 +1,6 @@
 package com.example.portalapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,6 +34,7 @@ public class Award {
     private int rank;
 
 //    @ManyToMany(mappedBy = "awards", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JsonIgnore
     @ManyToMany(mappedBy = "awards")
     private Set<User> recipients = new HashSet<>();
 

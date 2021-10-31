@@ -1,11 +1,13 @@
 package com.example.portalapi.entity.dto;
 
+import com.example.portalapi.entity.Award;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
+import java.util.Set;
 
 @JsonIgnoreProperties({"award"})
 public class UserDTO {
@@ -26,6 +28,8 @@ public class UserDTO {
     private Date joinDate;
     @JsonProperty("role")
     private String role;
+    @JsonProperty("awards")
+    private Set<Award> awards;
 
     @JsonCreator
     public UserDTO(Long id,
@@ -35,7 +39,8 @@ public class UserDTO {
                    String email,
                    String profileImageUrl,
                    Date joinDate,
-                   String role) {
+                   String role,
+                   Set<Award> awards) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -44,5 +49,6 @@ public class UserDTO {
         this.profileImageUrl = profileImageUrl;
         this.joinDate = joinDate;
         this.role = role;
+        this.awards = awards;
     }
 }

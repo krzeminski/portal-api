@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,12 +25,26 @@ public class NoteService {
     @Transactional
     public Page<NoteDTO> getNotesWithUsername(Pageable paging) {
 
-        final var noteEntities =
-                noteRepository.findAll(paging);
+//        final var noteEntities =
+//                noteRepository.findAll(paging);
 
 
         return new PageImpl<>(
                 noteRepository.findAll()
+                        .stream()
+                        .map(NoteEntityToDTOMapper::convertToNoteDTO)
+                        .collect(Collectors.toUnmodifiableList())
+        );
+    }
+
+    public Optional<NoteDTO> getNoteById(Long id) {
+        return this.noteRepository.findById(id).map(NoteEntityToDTOMapper::convertToNoteDTO);
+    }
+
+    @Transactional
+    public Page<NoteDTO> getNoteByUserId(Long id, Pageable paging) {
+        return new PageImpl<>(
+                noteRepository.findByUser_Id(id, paging)
                         .stream()
                         .map(NoteEntityToDTOMapper::convertToNoteDTO)
                         .collect(Collectors.toUnmodifiableList())
