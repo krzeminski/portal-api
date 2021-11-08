@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface NoteRepository extends JpaRepository<Note, Long> {
 
     Page<Note> findByUser_Id(@RequestParam("id") Long id, Pageable pageable);
-//  http://localhost:8081/api/notes/search/findByUser?id=1
-//    @Query("select * from Note where User.id = id")
-//    Page<Note> findNotesByUserId(@RequestParam("id") Long id, Pageable pageable);
+
+    
 }

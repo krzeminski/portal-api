@@ -1,7 +1,6 @@
 package com.example.portalapi.entity;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -18,10 +17,9 @@ import java.util.Date;
 @Entity
 @Table(name = "note")
 @Getter
-@Setter
 public class Note {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
@@ -34,7 +32,7 @@ public class Note {
     @Column(name = "value")
     private int value;
 
-    @Column(name = "creation_date")
+    @Column(name = "creation_date", updatable=false)
     @CreationTimestamp
     private Date creationDate;
 
@@ -43,6 +41,25 @@ public class Note {
     private Date updateDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-//    @ToString.Exclude
     private User user;
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

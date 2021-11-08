@@ -24,15 +24,27 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
-@Table(name="user", uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
+@Table(name = "user", uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
 @Getter
 @Setter
 public class User {
 
-    public enum Role {USER, MODERATOR, ADMIN}
+    public enum Role {
+        USER, MODERATOR, ADMIN;
+
+        private static final Map<String, Role> MAP = Stream.of(Role.values()).collect(Collectors.toMap(Enum::name, Function.identity()));
+
+        public static Role fromName(String name) {
+            return MAP.get(name);
+        }
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -59,7 +71,7 @@ public class User {
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
-    @Column(name = "join_date")
+    @Column(name = "join_date", updatable=false)
     @CreationTimestamp
     private Date joinDate;
 
@@ -73,7 +85,7 @@ public class User {
     @Column(name = "locked")
     private boolean isLocked;
 
-//    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    //    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @ManyToMany
     @JoinTable(
             name = "distributed_awards",
@@ -182,11 +194,19 @@ public class User {
         this.awards.add(award);
     }
 
+    public void setAwards(Set<Award> awards) {
+        this.awards = awards;
+    }
+
     public Collection<Note> getNotes() {
         return notes;
     }
 
     public void addNote(Note note) {
         this.notes.add(note);
+    }
+
+    public void setNotes(Collection<Note> notes) {
+        this.notes = notes;
     }
 }

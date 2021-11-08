@@ -16,6 +16,7 @@ public class NoteEntityToDTOMapper {
                             note.getValue(),
                             note.getCreationDate(),
                             note.getUpdateDate(),
-                            note.getUser().getUsername());
+                            note.getUser().getUsername(),
+                            note.getUser().getEmail());
     }
 }

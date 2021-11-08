@@ -19,6 +19,8 @@ public class UserEntityToDTOMapper {
                 user.getProfileImageUrl(),
                 user.getJoinDate(),
                 user.getRole().toString(),
+                user.isLocked(),
+                user.isActive(),
                 user.getAwards());
     }
 }

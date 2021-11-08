@@ -21,8 +21,10 @@ public class NoteDTO {
     @JsonProperty("updateDate")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Date updateDate;
-    @JsonProperty("author")
-    private String author;
+    @JsonProperty("authorUsername")
+    private String authorUsername;
+    @JsonProperty("authorEmail")
+    private String authorEmail;
 
     @JsonCreator
     public NoteDTO( Long id,
@@ -31,13 +33,71 @@ public class NoteDTO {
                     int value,
                     Date creationDate,
                     Date updateDate,
-                    String author) {
+                    String authorUsername,
+                    String authorEmail) {
         this.id = id;
         this.title = title;
         this.text = text;
         this.value = value;
         this.creationDate = creationDate;
         this.updateDate = updateDate;
-        this.author = author;
+        this.authorUsername = authorUsername;
+        this.authorEmail = authorEmail;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public String getAuthorUsername() {
+        return authorUsername;
+    }
+
+    public void setAuthorUsername(String authorUsername) {
+        this.authorUsername = authorUsername;
+    }
+
+    public String getAuthorEmail() {
+        return authorEmail;
+    }
+
+    public void setAuthorEmail(String authorEmail) {
+        this.authorEmail = authorEmail;
     }
 }
