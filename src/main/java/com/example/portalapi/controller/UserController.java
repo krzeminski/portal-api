@@ -1,6 +1,7 @@
 package com.example.portalapi.controller;
 
 import com.example.portalapi.entity.User;
+import com.example.portalapi.entity.dto.CredentialsDTO;
 import com.example.portalapi.entity.dto.UserDTO;
 import com.example.portalapi.service.UserService;
 import org.springframework.data.domain.Page;
@@ -42,12 +43,12 @@ public class UserController {
     @PostMapping(path = "/users",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<User> create(@RequestBody UserDTO userDTO) {
-        User user = userService.save(userDTO);
-        if (user == null) {
+    public ResponseEntity<User> create(@RequestBody User user) {
+        User u = userService.save(user);
+        if (u == null) {
             return ResponseEntity.badRequest().build();
         } else {
-            return new ResponseEntity<>(user, HttpStatus.CREATED);
+            return new ResponseEntity<>(u, HttpStatus.CREATED);
         }
     }
 
@@ -66,4 +67,17 @@ public class UserController {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping(path = "/users/authenticate",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UserDTO> authenticate(@RequestBody CredentialsDTO credentialsDTO) {
+        UserDTO userDTO = userService.authenticate(credentialsDTO);
+        if (userDTO == null) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return new ResponseEntity<>(userDTO, HttpStatus.CREATED);
+        }
+    }
+
 }

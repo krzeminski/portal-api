@@ -2,10 +2,12 @@ package com.example.portalapi.service;
 
 import com.example.portalapi.entity.Award;
 import com.example.portalapi.entity.User;
+import com.example.portalapi.entity.dto.CredentialsDTO;
 import com.example.portalapi.entity.dto.UserDTO;
 import com.example.portalapi.entity.dto.mapper.UserEntityToDTOMapper;
 import com.example.portalapi.repository.AwardRepository;
 import com.example.portalapi.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +26,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final AwardRepository awardRepository;
 
+    @Autowired
     public UserService(UserRepository userRepository, UserEntityToDTOMapper userEntityToDTOMapper, AwardRepository awardRepository) {
         this.userRepository = userRepository;
         this.userEntityToDTOMapper = userEntityToDTOMapper;
@@ -39,27 +42,39 @@ public class UserService {
                         .collect(Collectors.toUnmodifiableList()));
     }
 
-    public Optional<UserDTO> getUser(Long id){
+    public Optional<UserDTO> getUser(Long id) {
         return userRepository.findById(id)
                 .map(UserEntityToDTOMapper::convertToUserDTO);
     }
 
-    public User save(UserDTO userDTO){
-        User user = new User();
-        return userRepository.save(getUser(userDTO, user));
+    public User save(User user) {
+        return userRepository.save(user);
     }
 
-    public User update(UserDTO userDTO){
-        User user = new User();
-        user.setId(userDTO.getId());
-        return userRepository.save(getUser(userDTO, user));
+    public User update(UserDTO userDTO) {
+        User user = userRepository.findById(userDTO.getId()).orElse(null);
+        if (user != null) {
+            return userRepository.save(getUser(userDTO, user));
+        } else {
+            return null;
+        }
     }
 
-    public void deleteById(Long id){
+    public void deleteById(Long id) {
         userRepository.deleteById(id);
     }
 
-    public User addAwards(UserDTO userDTO){
+    public UserDTO authenticate(CredentialsDTO credentialsDTO) {
+        User user = userRepository.findByEmail(credentialsDTO.getEmail());
+        UserDTO userDTO = UserEntityToDTOMapper.convertToUserDTO(user);
+        if (user.getPassword().equals(credentialsDTO.getPassword())) {
+            return userDTO;
+        } else {
+            return null;
+        }
+    }
+
+    public User addAwards(UserDTO userDTO) {
         User user = new User();
         user.setId(userDTO.getId());
 
@@ -70,7 +85,7 @@ public class UserService {
             awardsProxy.add(tempAward);
         }
 
-        user.setAwards(new HashSet<> (awardsProxy));
+        user.setAwards(new HashSet<>(awardsProxy));
 
         return userRepository.save(user);
     }
@@ -80,12 +95,16 @@ public class UserService {
         user.setLastName(userDTO.getLastName());
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
-        user.setAwards(userDTO.getAwards());
+//        user.setAwards(userDTO.getAwards());
         user.setProfileImageUrl(userDTO.getProfileImageUrl());
-        user.setRole(User.Role.fromName(userDTO.getRole()));
+        if (userDTO.getRole() != null) {
+            user.setRole(User.Role.fromName(userDTO.getRole()));
+        } else {
+            user.setRole(user.getRole());
+        }
         user.setActive(userDTO.isActive());
         user.setLocked(userDTO.isLocked());
-        user.setRole(User.Role.fromName(userDTO.getRole()));
         return user;
     }
+
 }

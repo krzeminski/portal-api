@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sun.istack.NotNull;
 
 import java.util.Date;
 import java.util.Set;
@@ -12,6 +13,7 @@ import java.util.Set;
 @JsonIgnoreProperties({"award"})
 public class UserDTO {
     @JsonProperty("id")
+    @NotNull
     private Long id;
     @JsonProperty("firstName")
     private String firstName;
@@ -147,4 +149,5 @@ public class UserDTO {
     public void setAwards(Set<Award> awards) {
         this.awards = awards;
     }
+
 }

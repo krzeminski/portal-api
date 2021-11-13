@@ -5,6 +5,7 @@ import com.example.portalapi.entity.dto.NoteDTO;
 import com.example.portalapi.entity.dto.mapper.NoteEntityToDTOMapper;
 import com.example.portalapi.repository.NoteRepository;
 import com.example.portalapi.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ public class NoteService {
     private final NoteRepository noteRepository;
     private final UserRepository userRepository;
 
+    @Autowired
     public NoteService(NoteRepository noteRepository, NoteEntityToDTOMapper noteEntityToDTOMapper, UserRepository userRepository) {
         this.noteEntityToDTOMapper = noteEntityToDTOMapper;
         this.noteRepository = noteRepository;
@@ -50,7 +52,7 @@ public class NoteService {
         );
     }
 
-    public NoteDTO save(NoteDTO noteDTO){
+    public NoteDTO save(NoteDTO noteDTO) {
         Note note = new Note();
         note.setUser(userRepository.findByEmail(noteDTO.getAuthorEmail()));
         note.setTitle(noteDTO.getTitle());
@@ -61,17 +63,20 @@ public class NoteService {
         return NoteEntityToDTOMapper.convertToNoteDTO(saved);
     }
 
-    public Note update(NoteDTO noteDTO){
-        Note note = new Note();
-        note.setUser(userRepository.findByEmail(noteDTO.getAuthorEmail()));
-        note.setId(noteDTO.getId());
-        note.setTitle(noteDTO.getTitle());
-        note.setText(noteDTO.getText());
-        note.setValue(noteDTO.getValue());
-        return noteRepository.save(note);
+    public Note update(NoteDTO noteDTO) {
+        Optional<Note> opt = noteRepository.findById(noteDTO.getId());
+        if (opt.isPresent()) {
+            Note note = opt.get();
+            note.setTitle(noteDTO.getTitle());
+            note.setText(noteDTO.getText());
+            note.setValue(noteDTO.getValue());
+            return noteRepository.save(note);
+        } else {
+            return null;
+        }
     }
 
-    public void deleteById(Long id){
+    public void deleteById(Long id) {
         noteRepository.deleteById(id);
     }
 
