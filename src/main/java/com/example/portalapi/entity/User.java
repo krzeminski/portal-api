@@ -1,10 +1,15 @@
 package com.example.portalapi.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -22,28 +27,17 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Entity
 @Table(name = "user", uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
 @Getter
 @Setter
-public class User {
-
-    public enum Role {
-        USER, MODERATOR, ADMIN;
-
-        private static final Map<String, Role> MAP = Stream.of(Role.values()).collect(Collectors.toMap(Enum::name, Function.identity()));
-
-        public static Role fromName(String name) {
-            return MAP.get(name);
-        }
-    }
+@NoArgsConstructor
+@AllArgsConstructor
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -79,10 +73,10 @@ public class User {
     private Role role;
 
     @Column(name = "active")
-    private boolean isActive;
+    private boolean isActive = false;
 
     @Column(name = "locked")
-    private boolean isLocked;
+    private boolean isLocked = false;
 
     //    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @ManyToMany
@@ -97,68 +91,63 @@ public class User {
     @ToString.Exclude
     private Collection<Note> notes;
 
-    public Long getId() {
-        return id;
+    public User(String firstName,
+                   String lastName,
+                   String username,
+                   String email,
+                   String password,
+                   Role role) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.role = role;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        SimpleGrantedAuthority authority =
+                new SimpleGrantedAuthority(role.name());
+        return Collections.singletonList(authority);
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return !this.isLocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.isActive;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
     }
 
     public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
     public String getLastName() {
         return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getProfileImageUrl() {
-        return profileImageUrl;
-    }
-
-    public void setProfileImageUrl(String profileImageUrl) {
-        this.profileImageUrl = profileImageUrl;
-    }
-
-    public Date getJoinDate() {
-        return joinDate;
-    }
-
-    public void setJoinDate(Date joinDate) {
-        this.joinDate = joinDate;
     }
 
     public Role getRole() {
@@ -169,43 +158,12 @@ public class User {
         this.role = role;
     }
 
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public boolean isLocked() {
-        return isLocked;
-    }
-
-    public void setLocked(boolean locked) {
-        isLocked = locked;
-    }
-
-    public Set<Award> getAwards() {
-        return awards;
-    }
-
     public void addAward(Award award) {
         this.awards.add(award);
-    }
-
-    public void setAwards(Set<Award> awards) {
-        this.awards = awards;
-    }
-
-    public Collection<Note> getNotes() {
-        return notes;
     }
 
     public void addNote(Note note) {
         this.notes.add(note);
     }
 
-    public void setNotes(Collection<Note> notes) {
-        this.notes = notes;
-    }
 }

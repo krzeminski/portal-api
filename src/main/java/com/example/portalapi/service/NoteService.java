@@ -54,10 +54,9 @@ public class NoteService {
 
     public NoteDTO save(NoteDTO noteDTO) {
         Note note = new Note();
-        note.setUser(userRepository.findByEmail(noteDTO.getAuthorEmail()));
+        note.setUser(userRepository.findByEmail(noteDTO.getAuthorEmail()).orElse(null));
         note.setTitle(noteDTO.getTitle());
         note.setText(noteDTO.getText());
-        note.setValue(noteDTO.getValue());
         note.setValue(noteDTO.getValue());
         Note saved = noteRepository.save(note);
         return NoteEntityToDTOMapper.convertToNoteDTO(saved);
