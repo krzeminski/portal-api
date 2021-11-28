@@ -2,7 +2,7 @@ package com.example.portalapi.service;
 
 import com.example.portalapi.entity.Award;
 import com.example.portalapi.entity.ConfirmationToken;
-import com.example.portalapi.entity.Role;
+import com.example.portalapi.enumeration.Role;
 import com.example.portalapi.entity.User;
 import com.example.portalapi.entity.dto.CredentialsDTO;
 import com.example.portalapi.entity.dto.UserDTO;
@@ -92,6 +92,10 @@ public class UserService implements UserDetailsService {
     public Optional<UserDTO> getUser(Long id) {
         return userRepository.findById(id)
                 .map(UserEntityToDTOMapper::convertToUserDTO);
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     public User save(User user) {

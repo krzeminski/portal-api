@@ -1,7 +1,7 @@
 package com.example.portalapi.service;
 
 import com.example.portalapi.entity.ConfirmationToken;
-import com.example.portalapi.entity.Role;
+import com.example.portalapi.enumeration.Role;
 import com.example.portalapi.entity.User;
 import com.example.portalapi.model.Registration;
 import com.example.portalapi.utility.EmailValidator;

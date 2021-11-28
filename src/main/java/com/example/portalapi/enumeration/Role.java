@@ -1,4 +1,4 @@
-package com.example.portalapi.entity;
+package com.example.portalapi.enumeration;
 
 import java.util.Map;
 import java.util.function.Function;
