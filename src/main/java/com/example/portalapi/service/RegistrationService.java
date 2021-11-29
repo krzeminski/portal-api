@@ -3,7 +3,7 @@ package com.example.portalapi.service;
 import com.example.portalapi.entity.ConfirmationToken;
 import com.example.portalapi.enumeration.Role;
 import com.example.portalapi.entity.User;
-import com.example.portalapi.model.Registration;
+import com.example.portalapi.entity.dto.Registration;
 import com.example.portalapi.utility.EmailValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

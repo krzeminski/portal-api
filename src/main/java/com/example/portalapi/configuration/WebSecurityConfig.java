@@ -1,8 +1,10 @@
 package com.example.portalapi.configuration;
 
+import com.example.portalapi.filter.CustomAccessDeniedHandler;
 import com.example.portalapi.filter.CustomAuthenticationFilter;
 import com.example.portalapi.filter.CustomAuthorizationFilter;
 import com.example.portalapi.service.UserService;
+import com.example.portalapi.utility.JwtTokenProvider;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +23,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 
+import static com.example.portalapi.constant.SecurityConstant.PUBLIC_URLS;
+
 @Configuration
 @AllArgsConstructor
 @EnableWebSecurity
@@ -28,10 +32,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserService userService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean());
+        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean(),jwtTokenProvider);
         customAuthenticationFilter.setFilterProcessesUrl("/authenticate");
 
         http.cors().and().csrf().disable();
@@ -46,7 +52,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         }
                 );
         http.authorizeRequests()
-                .antMatchers("/authenticate/**", "/token/refresh/**", "/registration/**").permitAll()
+                .antMatchers(PUBLIC_URLS).permitAll()
                 .antMatchers("/login/**").permitAll()
                 .antMatchers("/users/**").hasAnyAuthority("ADMIN")
 //                .antMatchers("/users/**").hasRole("ADMIN")
@@ -54,6 +60,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated();
 //                .and().formLogin();
 
+        http.exceptionHandling().accessDeniedHandler(customAccessDeniedHandler);
         http.addFilter(customAuthenticationFilter);
         http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }

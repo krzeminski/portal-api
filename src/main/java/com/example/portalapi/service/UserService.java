@@ -49,6 +49,7 @@ public class UserService implements UserDetailsService {
     }
 
 
+    //todo: change to register request
     public String signUpUser(User user) {
         Optional<User> u = userRepository
                 .findByEmail(user.getEmail());

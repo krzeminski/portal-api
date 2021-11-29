@@ -1,4 +1,4 @@
-package com.example.portalapi.model;
+package com.example.portalapi.entity.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

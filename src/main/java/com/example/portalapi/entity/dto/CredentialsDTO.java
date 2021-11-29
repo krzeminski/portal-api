@@ -1,8 +1,3 @@
-/*
- * Copyright 2020 Motorola Solutions, Inc.
- * All Rights Reserved.
- * Motorola Solutions Confidential Restricted
- */
 package com.example.portalapi.entity.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

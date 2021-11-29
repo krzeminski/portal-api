@@ -169,6 +169,25 @@ public class User implements UserDetails {
     }
 
     @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", profileImageUrl='" + profileImageUrl + '\'' +
+                ", joinDate=" + joinDate +
+                ", role=" + role +
+                ", isActive=" + isActive +
+                ", isLocked=" + isLocked +
+                ", awards=" + awards +
+                ", notes=" + notes +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

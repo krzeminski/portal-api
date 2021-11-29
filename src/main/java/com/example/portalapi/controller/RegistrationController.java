@@ -1,6 +1,6 @@
 package com.example.portalapi.controller;
 
-import com.example.portalapi.model.Registration;
+import com.example.portalapi.entity.dto.Registration;
 import com.example.portalapi.service.RegistrationService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.CrossOrigin;
