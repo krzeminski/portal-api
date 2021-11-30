@@ -26,7 +26,8 @@ public class RegistrationService {
             throw new IllegalStateException("email not valid " + request.getEmail());
         }
 
-        String token = userService.signUpUser(
+        // TODO: 30.11.2021 add more params
+        String token = userService.register(
                 new User(
                         request.getFirstName(),
                         request.getLastName(),

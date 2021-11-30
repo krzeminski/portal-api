@@ -9,10 +9,11 @@ public class SecurityConstant {
     public static final String GET_ISSUER = "Portal Co.";
     public static final String GET_AUDIENCE = "Portal";
     public static final String ROLES = "roles";
+    public static final String USER_ID = "user_id";
     public static final String AUTHORITIES = "authorities";
     public static final String FORBIDDEN_MESSAGE = "You need to log in to access this page";
     public static final String ACCESS_DENIED_MESSAGE = "You do not have permission to access this page";
     public static final String OPTIONS_HTTP_METHOD = "OPTIONS";
-    public static final String[] PUBLIC_URLS = { "/authenticate", "/authenticate/**", "/token/refresh/**", "/registration/**" };
+    public static final String[] PUBLIC_URLS = { "/authenticate", "/authenticate/**", "/token/refresh/", "/token/refresh/**", "/registration/**" };
     //public static final String[] PUBLIC_URLS = { "**" };
 }

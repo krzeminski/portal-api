@@ -25,6 +25,7 @@ import static com.example.portalapi.constant.SecurityConstant.GET_AUDIENCE;
 import static com.example.portalapi.constant.SecurityConstant.GET_ISSUER;
 import static com.example.portalapi.constant.SecurityConstant.ROLES;
 import static com.example.portalapi.constant.SecurityConstant.TOKEN_CANNOT_BE_VERIFIED;
+import static com.example.portalapi.constant.SecurityConstant.USER_ID;
 import static java.util.Arrays.stream;
 
 @Component
@@ -39,9 +40,9 @@ public class JwtTokenProvider {
 
     public String generateJwtToken(User user, Long expirationTime) {
         String[] claims = getClaimsFromUser(user);
-        return JWT.create().withIssuer("http://localhost:4200").withAudience(GET_AUDIENCE)
+        return JWT.create().withIssuer(GET_ISSUER).withAudience(GET_AUDIENCE)
                 .withIssuedAt(new Date()).withSubject(user.getEmail())
-                .withArrayClaim(ROLES, claims).withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
+                .withArrayClaim(ROLES, claims).withClaim(USER_ID, user.getId()).withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
                 .sign(HMAC512(secret.getBytes()));
     }
 
@@ -65,6 +66,11 @@ public class JwtTokenProvider {
     public String getSubject(String token) {
         JWTVerifier verifier = getJWTVerifier();
         return verifier.verify(token).getSubject();
+    }
+
+    public String getUserIdFromToken(String token) {
+        JWTVerifier verifier = getJWTVerifier();
+        return verifier.verify(token).getClaim(USER_ID).asString();
     }
 
     private boolean isTokenExpired(JWTVerifier verifier, String token) {

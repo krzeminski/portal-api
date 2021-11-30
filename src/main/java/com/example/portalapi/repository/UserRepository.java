@@ -22,7 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(@RequestParam("email") String email);
 
-    Page<User> findByUsername(@RequestParam("username") String username, Pageable pageable);
+    User findByUsername(String username);
+//    Page<User> findByUsername(@RequestParam("username") String username, Pageable pageable);
 
     @Query("SELECT u FROM User u INNER JOIN u.awards a WHERE a IN (:awards)")
     List<User> findByAwards(Collection<Award> awards);
