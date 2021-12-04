@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -33,9 +34,14 @@ public class Award {
     @Column(name = "rank")
     private int rank;
 
-//    @ManyToMany(mappedBy = "awards", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    //    @ManyToMany(mappedBy = "awards", cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JsonIgnore
-    @ManyToMany(mappedBy = "awards")
+    @ManyToMany(
+            mappedBy = "awards",
+            cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
     private Set<User> recipients = new HashSet<>();
 
 

@@ -2,6 +2,7 @@ package com.example.portalapi.exception;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.example.portalapi.model.HttpResponse;
+import com.google.common.base.Joiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -13,22 +14,26 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.persistence.NoResultException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.example.portalapi.constant.ExceptionConstant.ACCOUNT_DISABLED;
-import static com.example.portalapi.constant.ExceptionConstant.ERROR_PATH;
-import static com.example.portalapi.constant.ExceptionConstant.INCORRECT_CREDENTIALS;
-import static com.example.portalapi.constant.ExceptionConstant.NOT_ENOUGH_PERMISSION;
 import static com.example.portalapi.constant.ExceptionConstant.ACCOUNT_LOCKED;
-import static com.example.portalapi.constant.ExceptionConstant.METHOD_IS_NOT_ALLOWED;
-import static com.example.portalapi.constant.ExceptionConstant.INTERNAL_SERVER_ERROR_MSG;
+import static com.example.portalapi.constant.ExceptionConstant.ERROR_PATH;
 import static com.example.portalapi.constant.ExceptionConstant.ERROR_PROCESSING_FILE;
+import static com.example.portalapi.constant.ExceptionConstant.INCORRECT_CREDENTIALS;
+import static com.example.portalapi.constant.ExceptionConstant.INTERNAL_SERVER_ERROR_MSG;
+import static com.example.portalapi.constant.ExceptionConstant.METHOD_IS_NOT_ALLOWED;
+import static com.example.portalapi.constant.ExceptionConstant.NOT_ENOUGH_PERMISSION;
 import static com.example.portalapi.constant.ExceptionConstant.PATH_NOT_FOUND;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -84,6 +89,22 @@ public class ExceptionHandling implements ErrorController {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<HttpResponse> userNotFoundException(UserNotFoundException exception) {
         return createHttpResponse(BAD_REQUEST, exception.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<HttpResponse> methodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        Map<String, String> errors = new HashMap<>();
+        exception.getBindingResult().getFieldErrors().forEach(error -> {
+                    if (errors.containsKey(error.getField())) {
+                        errors.put(error.getField(), String.format("%s, %s", errors.get(error.getField()), error.getDefaultMessage()));
+                    } else {
+                        errors.put(error.getField(), error.getDefaultMessage());
+                    }
+                }
+        );
+        String err = Joiner.on(",").withKeyValueSeparator("=").join(errors);
+        return createHttpResponse(BAD_REQUEST, err);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)

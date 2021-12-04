@@ -2,6 +2,7 @@ package com.example.portalapi.filter;
 
 import com.example.portalapi.entity.User;
 import com.example.portalapi.entity.dto.Credentials;
+import com.example.portalapi.service.LoginAttemptService;
 import com.example.portalapi.utility.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,10 +28,10 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public CustomAuthenticationFilter(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider) {
+    public CustomAuthenticationFilter(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, LoginAttemptService loginAttemptService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
-        setFilterProcessesUrl("/authenticate");
+        setFilterProcessesUrl("/api/authenticate");
     }
 
     @Override
@@ -49,7 +50,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
         User user = (User) authResult.getPrincipal();
         String access_token = jwtTokenProvider.generateJwtToken(user);
         String refresh_token = jwtTokenProvider.generateJwtToken(user, REFRESH_EXPIRATION_TIME);

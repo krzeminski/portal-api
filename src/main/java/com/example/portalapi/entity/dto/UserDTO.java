@@ -1,6 +1,7 @@
 package com.example.portalapi.entity.dto;
 
 import com.example.portalapi.entity.Award;
+import com.example.portalapi.utility.ValidEmail;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -21,6 +22,7 @@ public class UserDTO {
     private String lastName;
     @JsonProperty("username")
     private String username;
+    @ValidEmail
     @JsonProperty("email")
     private String email;
     @JsonProperty("profileImageUrl")

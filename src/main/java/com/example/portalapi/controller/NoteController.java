@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
@@ -28,34 +29,33 @@ public class NoteController {
         this.noteService = noteService;
     }
 
-    @GetMapping("/notes")
+    @GetMapping("/api/notes")
     Page<NoteDTO> getNotes(@PageableDefault(size = 20) Pageable paging){
         return noteService.getNotesWithUsername(paging);
     }
 
-    @GetMapping("/notes/{id}")
+    @GetMapping("/api/notes/{id}")
     ResponseEntity<Optional<NoteDTO>> getNoteById(@PathVariable("id") Long id) {
         return ResponseEntity.ok( this.noteService.getNoteById(id));
     }
 
-    @GetMapping("/notes/users/{id}")
+    @GetMapping("/api/notes/users/{id}")
     Page<NoteDTO> getNoteByUserId(@PathVariable("id") Long id, @PageableDefault(size = 20) Pageable paging) {
         return this.noteService.getNoteByUserId(id, paging);
     }
 
-    @PostMapping("/notes")
-    ResponseEntity<NoteDTO> createNote(@RequestBody NoteDTO noteDTO){
+    @PostMapping("/api/notes")
+    ResponseEntity<NoteDTO> createNote(@Valid @RequestBody NoteDTO noteDTO){
         NoteDTO note = this.noteService.save(noteDTO);
         if (note == null) {
             return ResponseEntity.badRequest().build();
         } else {
-
             return new ResponseEntity<NoteDTO>(note, HttpStatus.CREATED);
         }
     }
 
-    @PutMapping("/notes/{id}")
-    ResponseEntity<Note> updateNote(@RequestBody NoteDTO noteDTO){
+    @PutMapping("/api/notes/{id}")
+    ResponseEntity<Note> updateNote(@Valid @RequestBody NoteDTO noteDTO){
         Note note = this.noteService.update(noteDTO);
         if (note == null) {
             return ResponseEntity.badRequest().build();
@@ -64,7 +64,7 @@ public class NoteController {
         }
     }
 
-    @DeleteMapping("/notes/{id}")
+    @DeleteMapping("/api/notes/{id}")
     ResponseEntity<?> deleteNote(@PathVariable Long id) {
         noteService.deleteById(id);
         return ResponseEntity.noContent().build();

@@ -12,6 +12,7 @@ import com.example.portalapi.exception.UsernameExistsException;
 import com.example.portalapi.repository.AwardRepository;
 import com.example.portalapi.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -32,9 +33,9 @@ import java.util.stream.Collectors;
 
 import static com.example.portalapi.constant.UserConstant.EMAIL_ALREADY_EXISTS;
 import static com.example.portalapi.constant.UserConstant.NO_USER_FOUND_BY_EMAIL;
-import static com.example.portalapi.constant.UserConstant.NO_USER_FOUND_BY_USERNAME;
 import static com.example.portalapi.constant.UserConstant.USERNAME_ALREADY_EXISTS;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class UserService implements UserDetailsService {
@@ -48,40 +49,38 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        log.info(String.format("loadUserByUsername %s", email));
         User user = userRepository.findByEmail(email).orElse(null);
         if (user == null) {
             throw new UsernameNotFoundException(NO_USER_FOUND_BY_EMAIL + email);
         } else {
             validateLoginAttempt(user);
+            userRepository.save(user);
             return user;
         }
     }
 
-    public String register(User user) {
-        Optional<User> u = userRepository.findByEmail(user.getEmail());
-        boolean userExists = u.isPresent();
-
-        if (userExists) {
-            Optional<ConfirmationToken> token = confirmationTokenService.getTokenByUser(user);
-            if (token.isPresent() && (token.get().getConfirmedAt() == null)) {
-                return token.get().getToken();
-            } else {
-                throw new IllegalStateException("email already taken");
-            }
-        }
+    public String register(User user) throws EmailExistsException, UsernameExistsException {
+        validateNewUsernameAndEmail(user.getUsername(), user.getEmail());
 
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         userRepository.save(user);
-        
+
         String token = UUID.randomUUID().toString();
         ConfirmationToken confirmationToken = new ConfirmationToken(token, LocalDateTime.now(), LocalDateTime.now().plusHours(1), user);
         confirmationTokenService.saveConfirmationToken(confirmationToken);
         return token;
     }
 
-    public void activateUser(String email) {
-        userRepository.activateUser(email);
+    public void activateUser(String email) throws UserNotFoundException {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user != null) {
+            user.setActive(true);
+            userRepository.save(user);
+        } else {
+            throw new UserNotFoundException(NO_USER_FOUND_BY_EMAIL);
+        }
     }
 
     public Optional<UserDTO> getUserDTO(Long id) {
@@ -93,8 +92,8 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email).map(UserEntityToDTOMapper::convertToUserDTO);
     }
 
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null);
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     // TODO: 30.11.2021 validate
@@ -156,36 +155,22 @@ public class UserService implements UserDetailsService {
 
     private void validateLoginAttempt(User user) {
         if (!user.isLocked()) {
-            user.setLocked(loginAttemptService.hasExceededMaxAttempts(user.getUsername()));
+            user.setLocked(loginAttemptService.hasExceededMaxAttempts(user.getEmail()));
         } else {
             loginAttemptService.evictUserFromLoginAttemptCache(user.getEmail());
         }
     }
 
-    private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UserNotFoundException, UsernameExistsException, EmailExistsException {
+    private User validateNewUsernameAndEmail(String newUsername, String newEmail) throws UsernameExistsException, EmailExistsException {
         User userByNewUsername = userRepository.findByUsername(newUsername);
         User userByNewEmail = userRepository.findByEmail(newEmail).orElse(null);
-        if (!currentUsername.isBlank()) {
-            User currentUser = userRepository.findByUsername(currentUsername);
-            if (currentUser == null) {
-                throw new UserNotFoundException(NO_USER_FOUND_BY_USERNAME + currentUsername);
-            }
-            if (userByNewUsername != null && !currentUser.getId().equals(userByNewUsername.getId())) {
-                throw new UsernameExistsException(USERNAME_ALREADY_EXISTS);
-            }
-            if (userByNewEmail != null && !currentUser.getId().equals(userByNewEmail.getId())) {
-                throw new EmailExistsException(EMAIL_ALREADY_EXISTS);
-            }
-            return currentUser;
-        } else {
-            if (userByNewUsername != null) {
-                throw new UsernameExistsException(USERNAME_ALREADY_EXISTS);
-            }
-            if (userByNewEmail != null) {
-                throw new EmailExistsException(EMAIL_ALREADY_EXISTS);
-            }
-            return null;
+        if (userByNewUsername != null) {
+            throw new UsernameExistsException(USERNAME_ALREADY_EXISTS);
         }
+        if (userByNewEmail != null) {
+            throw new EmailExistsException(EMAIL_ALREADY_EXISTS);
+        }
+        return null;
     }
 
     public void resetPassword(String email) {

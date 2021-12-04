@@ -1,6 +1,8 @@
 package com.example.portalapi.entity;
 
 import com.example.portalapi.enumeration.Role;
+import com.example.portalapi.utility.ValidEmail;
+import com.example.portalapi.utility.ValidPassword;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,6 +29,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -47,20 +51,25 @@ public class User implements UserDetails {
     private Long id;
 
     @Column(name = "first_name")
+    @NotBlank(message = "Name is mandatory")
     private String firstName;
 
     @Column(name = "last_name")
+    @NotBlank(message = "Name is mandatory")
     private String lastName;
 
     @Column(name = "user_name")
+    @NotBlank(message = "Name is mandatory")
     private String username;
 
     @Column(name = "email")
+    @ValidEmail
+    @Email
+    @NotBlank(message = "Email is mandatory")
     private String email;
 
     @Column(name = "password")
-//    @JsonIgnore
-//    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @ValidPassword
     private String password;
 
     @Column(name = "profile_image_url")
@@ -75,12 +84,11 @@ public class User implements UserDetails {
     private Role role;
 
     @Column(name = "active")
-    private boolean isActive = false;
+    private boolean active = false;
 
     @Column(name = "locked")
-    private boolean isLocked = false;
+    private boolean locked = false;
 
-    //    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @ManyToMany
     @JoinTable(
             name = "distributed_awards",
@@ -89,9 +97,14 @@ public class User implements UserDetails {
     private Set<Award> awards;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private Collection<Note> notes;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private Collection<ConfirmationToken> confirmationTokens;
 
     public User(String firstName,
                    String lastName,
@@ -116,22 +129,22 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return this.isActive;
+        return this.active;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return !this.isLocked;
+        return !this.locked;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return this.isActive;
+        return this.active;
     }
 
     @Override
     public boolean isEnabled() {
-        return this.isActive;
+        return this.active;
     }
 
     @Override
@@ -160,6 +173,10 @@ public class User implements UserDetails {
         this.role = role;
     }
 
+    public void setLocked(boolean locked) {
+        this.locked = true;
+    }
+
     public void addAward(Award award) {
         this.awards.add(award);
     }
@@ -180,8 +197,8 @@ public class User implements UserDetails {
                 ", profileImageUrl='" + profileImageUrl + '\'' +
                 ", joinDate=" + joinDate +
                 ", role=" + role +
-                ", isActive=" + isActive +
-                ", isLocked=" + isLocked +
+                ", isActive=" + active +
+                ", isLocked=" + locked +
                 ", awards=" + awards +
                 ", notes=" + notes +
                 '}';

@@ -1,5 +1,6 @@
 package com.example.portalapi.entity.dto;
 
+import com.example.portalapi.utility.ValidEmail;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,6 +25,7 @@ public class NoteDTO {
     @JsonProperty("authorUsername")
     private String authorUsername;
     @JsonProperty("authorEmail")
+    @ValidEmail
     private String authorEmail;
 
     @JsonCreator

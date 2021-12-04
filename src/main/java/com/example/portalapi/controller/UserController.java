@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -47,19 +46,19 @@ public class UserController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    @GetMapping("/me")
+    @GetMapping("/api/me")
     @PreAuthorize("#id == authentication.principal.id")
     ResponseEntity<Optional<UserDTO>> getUser(Long id) {
         return ResponseEntity.ok(this.userService.getUserDTO(id));
     }
 
-    @GetMapping("/users")
+    @GetMapping("/api/users")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     Page<UserDTO> getUsers(@PageableDefault(size = 20) Pageable paging) {
         return this.userService.getUsers(paging);
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/api/users/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     ResponseEntity<Optional<UserDTO>> getUserById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(this.userService.getUserDTO(id));
@@ -76,21 +75,21 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/api/users/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/reset/password/{email}")
-    public ResponseEntity<HttpResponse> resetPassword(@PathVariable("email") String email) throws MessagingException, EmailNotFoundException {
+    @GetMapping("/api/reset/password/{email}")
+    public ResponseEntity<HttpResponse> resetPassword(@PathVariable("email") String email) throws EmailNotFoundException {
         userService.resetPassword(email);
         return new ResponseEntity<>(new HttpResponse(OK.value(), OK, OK.getReasonPhrase().toUpperCase(),
                 EMAIL_SENT + email), OK);
     }
 
-    @GetMapping("/token/refresh")
+    @GetMapping("/api/token/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // TODO: 29.11.2021 refresh token
         String authorizationHeader = request.getHeader(AUTHORIZATION);
@@ -100,7 +99,7 @@ public class UserController {
         String refresh_token = authorizationHeader.substring(TOKEN_PREFIX.length());
         String user_email = jwtTokenProvider.getSubject(refresh_token);
         if (jwtTokenProvider.isTokenValid(user_email, refresh_token)) {
-            User user = userService.getUserByEmail(user_email);
+            User user = userService.getUserByEmail(user_email).orElse(null);
             String access_token = jwtTokenProvider.generateJwtToken(user);
             Map<String, String> tokens = new HashMap<>();
             tokens.put("access_token", access_token);

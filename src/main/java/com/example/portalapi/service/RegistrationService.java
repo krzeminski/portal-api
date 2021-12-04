@@ -1,10 +1,12 @@
 package com.example.portalapi.service;
 
 import com.example.portalapi.entity.ConfirmationToken;
-import com.example.portalapi.enumeration.Role;
 import com.example.portalapi.entity.User;
 import com.example.portalapi.entity.dto.Registration;
-import com.example.portalapi.utility.EmailValidator;
+import com.example.portalapi.enumeration.Role;
+import com.example.portalapi.exception.EmailExistsException;
+import com.example.portalapi.exception.UserNotFoundException;
+import com.example.portalapi.exception.UsernameExistsException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,38 +18,32 @@ import java.time.LocalDateTime;
 public class RegistrationService {
     private final UserService userService;
     private final ConfirmationTokenService confirmationTokenService;
-    private final EmailValidator emailValidator;
     private final EmailService emailService;
 
-    public String register(Registration request) {
-        boolean isValidEmail = emailValidator.test(request.getEmail());
-
-        if (!isValidEmail) {
-            throw new IllegalStateException("email not valid " + request.getEmail());
-        }
+    public String register(Registration registration) throws EmailExistsException, UsernameExistsException {
 
         // TODO: 30.11.2021 add more params
         String token = userService.register(
                 new User(
-                        request.getFirstName(),
-                        request.getLastName(),
-                        request.getUsername(),
-                        request.getEmail(),
-                        request.getPassword(),
+                        registration.getFirstName(),
+                        registration.getLastName(),
+                        registration.getUsername(),
+                        registration.getEmail(),
+                        registration.getPassword(),
                         Role.USER
                 )
         );
 
         String link = "http://localhost:8081/registration/confirm?token=" + token;
         emailService.send(
-                request.getEmail(),
-                emailService.buildRegistrationConfirmationEmail(request.getFirstName(), link));
+                registration.getEmail(),
+                emailService.buildRegistrationConfirmationEmail(registration.getFirstName(), link));
 
         return token;
     }
 
     @Transactional
-    public String confirmToken(String token){
+    public String confirmToken(String token) throws UserNotFoundException {
         ConfirmationToken confirmationToken = confirmationTokenService
                 .getToken(token)
                 .orElseThrow(() ->

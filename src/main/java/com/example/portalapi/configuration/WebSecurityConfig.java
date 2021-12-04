@@ -3,6 +3,7 @@ package com.example.portalapi.configuration;
 import com.example.portalapi.filter.CustomAccessDeniedHandler;
 import com.example.portalapi.filter.CustomAuthenticationFilter;
 import com.example.portalapi.filter.CustomAuthorizationFilter;
+import com.example.portalapi.service.LoginAttemptService;
 import com.example.portalapi.service.UserService;
 import com.example.portalapi.utility.JwtTokenProvider;
 import lombok.AllArgsConstructor;
@@ -34,29 +35,29 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final LoginAttemptService loginAttemptService;
+
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean(),jwtTokenProvider);
-        customAuthenticationFilter.setFilterProcessesUrl("/authenticate");
+        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean(),jwtTokenProvider, loginAttemptService);
+        customAuthenticationFilter.setFilterProcessesUrl("/api/authenticate");
 
         http.cors().and().csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.exceptionHandling()
                 .authenticationEntryPoint(
-                        (request, response, ex) -> {
-                            response.sendError(
-                                    HttpServletResponse.SC_UNAUTHORIZED,
-                                    ex.getMessage()
-                            );
-                        }
+                        (request, response, ex) -> response.sendError(
+                                HttpServletResponse.SC_UNAUTHORIZED,
+                                ex.getMessage()
+                        )
                 );
         http.authorizeRequests()
                 .antMatchers(PUBLIC_URLS).permitAll()
-                .antMatchers("/login/**").permitAll()
-                .antMatchers("/users/**").hasAnyAuthority("ADMIN")
-//                .antMatchers("/users/**").hasRole("ADMIN")
-                .antMatchers("/notes/**").hasAnyAuthority("ADMIN", "MODERATOR", "USER")
+                .antMatchers("/api/login/**").permitAll()
+                .antMatchers("/api/users/**").hasAnyAuthority("ADMIN")
+//                .antMatchers("/api/users/**").hasRole("ADMIN")
+                .antMatchers("/api/notes/**").hasAnyAuthority("ADMIN", "MODERATOR", "USER")
                 .anyRequest().authenticated();
 //                .and().formLogin();
 
