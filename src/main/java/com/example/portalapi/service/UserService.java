@@ -12,7 +12,6 @@ import com.example.portalapi.exception.UsernameExistsException;
 import com.example.portalapi.repository.AwardRepository;
 import com.example.portalapi.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -33,9 +32,9 @@ import java.util.stream.Collectors;
 
 import static com.example.portalapi.constant.UserConstant.EMAIL_ALREADY_EXISTS;
 import static com.example.portalapi.constant.UserConstant.NO_USER_FOUND_BY_EMAIL;
+import static com.example.portalapi.constant.UserConstant.NO_USER_FOUND_BY_ID;
 import static com.example.portalapi.constant.UserConstant.USERNAME_ALREADY_EXISTS;
 
-@Slf4j
 @Service
 @AllArgsConstructor
 public class UserService implements UserDetailsService {
@@ -44,12 +43,11 @@ public class UserService implements UserDetailsService {
     private final AwardRepository awardRepository;
     private final ConfirmationTokenService confirmationTokenService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private LoginAttemptService loginAttemptService;
+    private final LoginAttemptService loginAttemptService;
     private final EmailService emailService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        log.info(String.format("loadUserByUsername %s", email));
         User user = userRepository.findByEmail(email).orElse(null);
         if (user == null) {
             throw new UsernameNotFoundException(NO_USER_FOUND_BY_EMAIL + email);
@@ -65,10 +63,10 @@ public class UserService implements UserDetailsService {
 
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
-        userRepository.save(user);
+        User newUser = userRepository.save(user);
 
         String token = UUID.randomUUID().toString();
-        ConfirmationToken confirmationToken = new ConfirmationToken(token, LocalDateTime.now(), LocalDateTime.now().plusHours(1), user);
+        ConfirmationToken confirmationToken = new ConfirmationToken(token, LocalDateTime.now(), LocalDateTime.now().plusHours(1), newUser);
         confirmationTokenService.saveConfirmationToken(confirmationToken);
         return token;
     }
@@ -96,13 +94,12 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email);
     }
 
-    // TODO: 30.11.2021 validate
-    public User update(UserDTO userDTO) {
+    public User update(UserDTO userDTO) throws UserNotFoundException {
         User user = userRepository.findById(userDTO.getId()).orElse(null);
         if (user != null) {
             return userRepository.save(getUser(userDTO, user));
         } else {
-            return null;
+            throw new UserNotFoundException(NO_USER_FOUND_BY_ID);
         }
     }
 
@@ -119,37 +116,29 @@ public class UserService implements UserDetailsService {
                         .collect(Collectors.toUnmodifiableList()));
     }
 
-    public User addAwards(UserDTO userDTO) {
-        User user = new User();
-        user.setId(userDTO.getId());
-
-        List<Award> awardsProxy = new ArrayList<>();
-
-        for (Award awardObj : userDTO.getAwards()) {
-            Award tempAward = awardRepository.getById(awardObj.getId());
-            awardsProxy.add(tempAward);
-        }
-
-        user.setAwards(new HashSet<>(awardsProxy));
-
-        return userRepository.save(user);
-    }
 
     private User getUser(UserDTO userDTO, User user) {
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
-        // TODO: 30.11.2021 fix awards 
-//        user.setAwards(userDTO.getAwards());
         user.setProfileImageUrl(userDTO.getProfileImageUrl());
+        user.setActive(userDTO.isActive());
+        user.setLocked(userDTO.isLocked());
+
         if (userDTO.getRole() != null) {
             user.setRole(Role.fromName(userDTO.getRole()));
         } else {
             user.setRole(user.getRole());
         }
-        user.setActive(userDTO.isActive());
-        user.setLocked(userDTO.isLocked());
+
+        List<Award> awardsProxy = new ArrayList<>();
+        for (Award awardObj : userDTO.getAwards()) {
+            Award tempAward = awardRepository.getById(awardObj.getId());
+            awardsProxy.add(tempAward);
+        }
+        user.setAwards(new HashSet<>(awardsProxy));
+
         return user;
     }
 

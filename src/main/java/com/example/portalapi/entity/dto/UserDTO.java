@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.istack.NotNull;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.util.Date;
 import java.util.Set;
 
@@ -16,13 +18,18 @@ public class UserDTO {
     @JsonProperty("id")
     @NotNull
     private Long id;
+    @NotBlank(message = "Name is mandatory")
     @JsonProperty("firstName")
     private String firstName;
+    @NotBlank(message = "lastName is mandatory")
     @JsonProperty("lastName")
     private String lastName;
+    @NotBlank(message = "username is mandatory")
     @JsonProperty("username")
     private String username;
     @ValidEmail
+    @Email
+    @NotBlank(message = "Email is mandatory")
     @JsonProperty("email")
     private String email;
     @JsonProperty("profileImageUrl")
@@ -32,10 +39,10 @@ public class UserDTO {
     private Date joinDate;
     @JsonProperty("role")
     private String role;
-    @JsonProperty("isLocked")
-    private boolean isLocked;
-    @JsonProperty("isActive")
-    private boolean isActive;
+    @JsonProperty("locked")
+    private boolean locked;
+    @JsonProperty("active")
+    private boolean active;
     @JsonProperty("awards")
     private Set<Award> awards;
 
@@ -48,8 +55,8 @@ public class UserDTO {
                    String profileImageUrl,
                    Date joinDate,
                    String role,
-                   boolean isLocked,
-                   boolean isActive,
+                   boolean locked,
+                   boolean active,
                    Set<Award> awards) {
         this.id = id;
         this.firstName = firstName;
@@ -59,8 +66,8 @@ public class UserDTO {
         this.profileImageUrl = profileImageUrl;
         this.joinDate = joinDate;
         this.role = role;
-        this.isLocked = isLocked;
-        this.isActive = isActive;
+        this.locked = locked;
+        this.active = active;
         this.awards = awards;
     }
 
@@ -129,19 +136,19 @@ public class UserDTO {
     }
 
     public boolean isLocked() {
-        return isLocked;
+        return locked;
     }
 
     public void setLocked(boolean locked) {
-        isLocked = locked;
+        this.locked = locked;
     }
 
     public boolean isActive() {
-        return isActive;
+        return active;
     }
 
     public void setActive(boolean active) {
-        isActive = active;
+        this.active = active;
     }
 
     public Set<Award> getAwards() {

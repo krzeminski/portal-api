@@ -29,7 +29,7 @@ public class NoteService {
     }
 
     @Transactional
-    public Page<NoteDTO> getNotesWithUsername(Pageable paging) {
+    public Page<NoteDTO> getNotes(Pageable paging) {
         return new PageImpl<>(
                 noteRepository.findAll()
                         .stream()
@@ -41,11 +41,23 @@ public class NoteService {
     public Optional<NoteDTO> getNoteById(Long id) {
         return this.noteRepository.findById(id).map(NoteEntityToDTOMapper::convertToNoteDTO);
     }
+    public Optional<Note> findById(Long id) {
+        return this.noteRepository.findById(id);
+    }
 
     @Transactional
     public Page<NoteDTO> getNoteByUserId(Long id, Pageable paging) {
         return new PageImpl<>(
                 noteRepository.findByUser_Id(id, paging)
+                        .stream()
+                        .map(NoteEntityToDTOMapper::convertToNoteDTO)
+                        .collect(Collectors.toUnmodifiableList())
+        );
+    }
+    @Transactional
+    public Page<NoteDTO> getNoteByUser(String email, Pageable paging) {
+        return new PageImpl<>(
+                noteRepository.findByUser_Email(email, paging)
                         .stream()
                         .map(NoteEntityToDTOMapper::convertToNoteDTO)
                         .collect(Collectors.toUnmodifiableList())

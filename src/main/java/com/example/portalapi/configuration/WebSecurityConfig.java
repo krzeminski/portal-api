@@ -43,7 +43,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean(),jwtTokenProvider, loginAttemptService);
         customAuthenticationFilter.setFilterProcessesUrl("/api/authenticate");
 
-        http.cors().and().csrf().disable();
+        http.cors();
+        http.csrf().disable();
+//        http.cors().configurationSource(request -> {
+//            var cors = new CorsConfiguration();
+//            cors.setAllowedOrigins(List.of("http://localhost:4200", "http://127.0.0.1:80", "http://example.com"));
+//            cors.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS"));
+//            cors.setAllowedHeaders(List.of("*"));
+//            return cors;
+//        });
+        http.requiresChannel(channel ->
+                channel.anyRequest().requiresSecure());
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.exceptionHandling()
                 .authenticationEntryPoint(
@@ -58,6 +68,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/users/**").hasAnyAuthority("ADMIN")
 //                .antMatchers("/api/users/**").hasRole("ADMIN")
                 .antMatchers("/api/notes/**").hasAnyAuthority("ADMIN", "MODERATOR", "USER")
+                .antMatchers("/api/me/**").hasAnyAuthority("ADMIN", "MODERATOR", "USER")
                 .anyRequest().authenticated();
 //                .and().formLogin();
 
@@ -91,8 +102,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
+        configuration.setAllowedOrigins(Arrays.asList("https://localhost:4200"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -103,6 +115,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
+
+
 
 //    @Bean
 //    public CorsFilter corsFilter() {

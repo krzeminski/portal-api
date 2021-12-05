@@ -11,9 +11,8 @@ public class SecurityConstant {
     public static final String ROLES = "roles";
     public static final String USER_ID = "user_id";
     public static final String AUTHORITIES = "authorities";
-    public static final String FORBIDDEN_MESSAGE = "You need to log in to access this page";
-    public static final String ACCESS_DENIED_MESSAGE = "You do not have permission to access this page";
+    public static final String FORBIDDEN_MESSAGE = "Musisz się zalogować, aby uzyskać dostęp do tej strony";
+    public static final String ACCESS_DENIED_MESSAGE = "Nie masz uprawnień dostępu do tej strony";
     public static final String OPTIONS_HTTP_METHOD = "OPTIONS";
     public static final String[] PUBLIC_URLS = { "/api/authenticate", "/api/authenticate/**", "/api/token/refresh/", "/api/token/refresh/**", "/api/registration/**" };
-    //public static final String[] PUBLIC_URLS = { "**" };
 }

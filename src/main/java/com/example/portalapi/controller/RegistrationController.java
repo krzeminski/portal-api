@@ -2,11 +2,11 @@ package com.example.portalapi.controller;
 
 import com.example.portalapi.entity.dto.Registration;
 import com.example.portalapi.exception.EmailExistsException;
+import com.example.portalapi.exception.UserNotFoundException;
 import com.example.portalapi.exception.UsernameExistsException;
 import com.example.portalapi.service.RegistrationService;
 import lombok.AllArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +17,6 @@ import javax.validation.Valid;
 
 @RestController
 @AllArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 @Validated
 public class RegistrationController {
     private final RegistrationService registrationService;
@@ -28,7 +27,7 @@ public class RegistrationController {
     }
 
     @GetMapping(path = "/api/registration/confirm")
-    public String confirm(@RequestParam("token") String token) {
+    public String confirm(@RequestParam("token") String token) throws UserNotFoundException {
         return registrationService.confirmToken(token);
     }
 

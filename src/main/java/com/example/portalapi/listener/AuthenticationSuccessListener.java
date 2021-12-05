@@ -2,13 +2,11 @@ package com.example.portalapi.listener;
 
 import com.example.portalapi.entity.User;
 import com.example.portalapi.service.LoginAttemptService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 public class AuthenticationSuccessListener {
     private final LoginAttemptService loginAttemptService;

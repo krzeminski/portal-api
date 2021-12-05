@@ -2,7 +2,6 @@ package com.example.portalapi.entity;
 
 import com.example.portalapi.enumeration.Role;
 import com.example.portalapi.utility.ValidEmail;
-import com.example.portalapi.utility.ValidPassword;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -55,11 +54,11 @@ public class User implements UserDetails {
     private String firstName;
 
     @Column(name = "last_name")
-    @NotBlank(message = "Name is mandatory")
+    @NotBlank(message = "lastName is mandatory")
     private String lastName;
 
     @Column(name = "user_name")
-    @NotBlank(message = "Name is mandatory")
+    @NotBlank(message = "username is mandatory")
     private String username;
 
     @Column(name = "email")
@@ -69,7 +68,6 @@ public class User implements UserDetails {
     private String email;
 
     @Column(name = "password")
-    @ValidPassword
     private String password;
 
     @Column(name = "profile_image_url")
@@ -174,7 +172,7 @@ public class User implements UserDetails {
     }
 
     public void setLocked(boolean locked) {
-        this.locked = true;
+        this.locked = locked;
     }
 
     public void addAward(Award award) {

@@ -21,7 +21,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
 
     @Async
-    public void send(String to, String content) {
+    public void send(String to, String content) throws IllegalStateException {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper =

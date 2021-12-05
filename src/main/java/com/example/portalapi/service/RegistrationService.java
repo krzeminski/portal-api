@@ -20,9 +20,7 @@ public class RegistrationService {
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailService emailService;
 
-    public String register(Registration registration) throws EmailExistsException, UsernameExistsException {
-
-        // TODO: 30.11.2021 add more params
+    public String register(Registration registration) throws EmailExistsException, UsernameExistsException, IllegalStateException {
         String token = userService.register(
                 new User(
                         registration.getFirstName(),
@@ -44,6 +42,7 @@ public class RegistrationService {
 
     @Transactional
     public String confirmToken(String token) throws UserNotFoundException {
+        // TODO: 05.12.2021 przerobić exceptions
         ConfirmationToken confirmationToken = confirmationTokenService
                 .getToken(token)
                 .orElseThrow(() ->
