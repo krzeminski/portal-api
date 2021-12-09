@@ -9,7 +9,6 @@ import com.example.portalapi.model.HttpResponse;
 import com.example.portalapi.service.UserService;
 import com.example.portalapi.utility.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -41,7 +40,6 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@Slf4j
 @RestController
 public class UserController {
     private final UserService userService;

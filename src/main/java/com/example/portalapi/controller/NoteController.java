@@ -5,7 +5,6 @@ import com.example.portalapi.entity.dto.NoteDTO;
 import com.example.portalapi.enumeration.Role;
 import com.example.portalapi.exception.NotesNotFoundException;
 import com.example.portalapi.service.NoteService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -28,7 +27,6 @@ import static com.example.portalapi.constant.NotesConstant.NOTES_NOT_FOUND_FOR_U
 import static com.example.portalapi.constant.NotesConstant.NOTE_NOT_FOUND_FOR_ID;
 import static com.example.portalapi.constant.NotesConstant.YOU_ARE_NOT_AN_OWNER;
 
-@Slf4j
 @RestController
 public class NoteController {
     private final NoteService noteService;
@@ -42,7 +40,6 @@ public class NoteController {
         String email = (String) authentication.getPrincipal();
         String role = authentication.getAuthorities().iterator().next().getAuthority();
         if (role.equals(Role.USER.name())) {
-            log.info(role);
             return noteService.getNoteByUser(email, paging);
         } else if (role.equals(Role.ADMIN.name()) || role.equals(Role.MODERATOR.name())) {
             return noteService.getNotes(paging);
