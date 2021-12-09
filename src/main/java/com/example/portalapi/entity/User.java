@@ -155,6 +155,10 @@ public class User implements UserDetails {
         return email;
     }
 
+    public String getUsernameDTO() {
+        return username;
+    }
+
     public String getFirstName() {
         return firstName;
     }

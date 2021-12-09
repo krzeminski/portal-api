@@ -14,7 +14,7 @@ public class UserEntityToDTOMapper {
                 user.getId(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getUsername(),
+                user.getUsernameDTO(),
                 user.getEmail(),
                 user.getProfileImageUrl(),
                 user.getJoinDate(),

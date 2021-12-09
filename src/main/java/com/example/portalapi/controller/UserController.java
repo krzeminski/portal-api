@@ -2,6 +2,7 @@ package com.example.portalapi.controller;
 
 import com.example.portalapi.entity.User;
 import com.example.portalapi.entity.dto.UserDTO;
+import com.example.portalapi.enumeration.Role;
 import com.example.portalapi.exception.EmailNotFoundException;
 import com.example.portalapi.exception.UserNotFoundException;
 import com.example.portalapi.model.HttpResponse;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,6 +36,7 @@ import java.util.Optional;
 
 import static com.example.portalapi.constant.EmailConstant.EMAIL_SENT;
 import static com.example.portalapi.constant.SecurityConstant.TOKEN_PREFIX;
+import static com.example.portalapi.constant.UserConstant.NO_USER_FOUND_BY_EMAIL;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -50,9 +53,10 @@ public class UserController {
     }
 
     @GetMapping("/api/me")
-    ResponseEntity<Optional<UserDTO>> getUser(Authentication authentication) {
+    ResponseEntity<UserDTO> getUser(Authentication authentication) {
         String email = (String) authentication.getPrincipal();
-        return ResponseEntity.ok(this.userService.getUserDTOByEmail(email));
+        UserDTO user = this.userService.getUserDTOByEmail(email).orElseThrow(() -> new UsernameNotFoundException(NO_USER_FOUND_BY_EMAIL));
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping("/api/users")
@@ -69,8 +73,14 @@ public class UserController {
 
     @PutMapping(path = "/api/users")
     @PreAuthorize("hasAuthority('ADMIN') || (authentication.principal == #userDTO.email)")
-    public ResponseEntity<User> update(@Valid @RequestBody UserDTO userDTO) throws UserNotFoundException {
+    public ResponseEntity<User> update(@Valid @RequestBody UserDTO userDTO, Authentication authentication) throws UserNotFoundException {
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+
+        if (!role.equals(Role.ADMIN.name())) {
+            userDTO.setRole(null);
+        }
         User user = userService.update(userDTO);
+
         if (user == null) {
             return ResponseEntity.badRequest().build();
         } else {

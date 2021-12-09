@@ -12,6 +12,7 @@ import com.example.portalapi.exception.UsernameExistsException;
 import com.example.portalapi.repository.AwardRepository;
 import com.example.portalapi.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,7 @@ import static com.example.portalapi.constant.UserConstant.NO_USER_FOUND_BY_EMAIL
 import static com.example.portalapi.constant.UserConstant.NO_USER_FOUND_BY_ID;
 import static com.example.portalapi.constant.UserConstant.USERNAME_ALREADY_EXISTS;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class UserService implements UserDetailsService {
@@ -59,7 +61,7 @@ public class UserService implements UserDetailsService {
     }
 
     public String register(User user) throws EmailExistsException, UsernameExistsException {
-        validateNewUsernameAndEmail(user.getUsername(), user.getEmail());
+        validateNewUsernameAndEmail(user.getUsernameDTO(), user.getEmail());
 
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
@@ -87,7 +89,11 @@ public class UserService implements UserDetailsService {
     }
 
     public Optional<UserDTO> getUserDTOByEmail(String email) {
-        return userRepository.findByEmail(email).map(UserEntityToDTOMapper::convertToUserDTO);
+        Optional<User> user = userRepository.findByEmail(email);
+        Optional<UserDTO> userDTO = user.map(UserEntityToDTOMapper::convertToUserDTO);
+        log.info(user.toString());
+        log.info("userDTO" + userDTO.toString());
+        return userDTO;
     }
 
     public Optional<User> getUserByEmail(String email) {
@@ -95,7 +101,7 @@ public class UserService implements UserDetailsService {
     }
 
     public User update(UserDTO userDTO) throws UserNotFoundException {
-        User user = userRepository.findById(userDTO.getId()).orElse(null);
+        User user = userRepository.findByEmail(userDTO.getEmail()).orElse(null);
         if (user != null) {
             return userRepository.save(getUser(userDTO, user));
         } else {
@@ -123,21 +129,19 @@ public class UserService implements UserDetailsService {
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
         user.setProfileImageUrl(userDTO.getProfileImageUrl());
-        user.setActive(userDTO.isActive());
-        user.setLocked(userDTO.isLocked());
 
         if (userDTO.getRole() != null) {
             user.setRole(Role.fromName(userDTO.getRole()));
-        } else {
-            user.setRole(user.getRole());
         }
 
-        List<Award> awardsProxy = new ArrayList<>();
-        for (Award awardObj : userDTO.getAwards()) {
-            Award tempAward = awardRepository.getById(awardObj.getId());
-            awardsProxy.add(tempAward);
+        if (userDTO.getAwards() != null) {
+            List<Award> awardsProxy = new ArrayList<>();
+            for (Award awardObj : userDTO.getAwards()) {
+                Award tempAward = awardRepository.getById(awardObj.getId());
+                awardsProxy.add(tempAward);
+            }
+            user.setAwards(new HashSet<>(awardsProxy));
         }
-        user.setAwards(new HashSet<>(awardsProxy));
 
         return user;
     }

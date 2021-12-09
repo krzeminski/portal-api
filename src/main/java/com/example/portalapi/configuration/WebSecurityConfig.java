@@ -9,8 +9,10 @@ import com.example.portalapi.utility.JwtTokenProvider;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -29,6 +31,7 @@ import static com.example.portalapi.constant.SecurityConstant.PUBLIC_URLS;
 @Configuration
 @AllArgsConstructor
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserService userService;
@@ -40,7 +43,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean(),jwtTokenProvider, loginAttemptService);
+        CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(authenticationManagerBean(), jwtTokenProvider, loginAttemptService);
         customAuthenticationFilter.setFilterProcessesUrl("/api/authenticate");
 
         http.cors();
@@ -65,8 +68,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers(PUBLIC_URLS).permitAll()
                 .antMatchers("/api/login/**").permitAll()
-                .antMatchers("/api/users/**").hasAnyAuthority("ADMIN")
-//                .antMatchers("/api/users/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT,"/api/users").hasAnyAuthority("ADMIN", "MODERATOR", "USER")
+                .antMatchers("/api/users/**").hasAuthority("ADMIN")
                 .antMatchers("/api/notes/**").hasAnyAuthority("ADMIN", "MODERATOR", "USER")
                 .antMatchers("/api/me/**").hasAnyAuthority("ADMIN", "MODERATOR", "USER")
                 .anyRequest().authenticated();
@@ -115,7 +118,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-
 
 
 //    @Bean

@@ -159,4 +159,20 @@ public class UserDTO {
         this.awards = awards;
     }
 
+    @Override
+    public String toString() {
+        return "UserDTO{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", profileImageUrl='" + profileImageUrl + '\'' +
+                ", joinDate=" + joinDate +
+                ", role='" + role + '\'' +
+                ", locked=" + locked +
+                ", active=" + active +
+                ", awards=" + awards +
+                '}';
+    }
 }

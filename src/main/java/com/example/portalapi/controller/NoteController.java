@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,9 +21,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.net.URI;
 
+import static com.example.portalapi.constant.NotesConstant.COULD_NOT_CREATE;
 import static com.example.portalapi.constant.NotesConstant.NOTES_NOT_FOUND_FOR_USER;
 import static com.example.portalapi.constant.NotesConstant.NOTE_NOT_FOUND_FOR_ID;
+import static com.example.portalapi.constant.NotesConstant.YOU_ARE_NOT_AN_OWNER;
 
 @Slf4j
 @RestController
@@ -39,53 +41,75 @@ public class NoteController {
     Page<NoteDTO> getNotes(@PageableDefault(size = 20) Pageable paging, Authentication authentication) throws NotesNotFoundException {
         String email = (String) authentication.getPrincipal();
         String role = authentication.getAuthorities().iterator().next().getAuthority();
-        if (role.isEmpty()) {
-            throw new NotesNotFoundException(NOTES_NOT_FOUND_FOR_USER);
-        }
         if (role.equals(Role.USER.name())) {
             log.info(role);
             return noteService.getNoteByUser(email, paging);
-        } else {
+        } else if (role.equals(Role.ADMIN.name()) || role.equals(Role.MODERATOR.name())) {
             return noteService.getNotes(paging);
+        } else {
+            throw new NotesNotFoundException(NOTES_NOT_FOUND_FOR_USER);
         }
     }
 
     @GetMapping("/api/notes/{id}")
-//    @PostAuthorize("returnObject.authorEmail == authentication.name")
-    @PreAuthorize("hasAuthority('ADMIN') || (@noteService.findById(#id).orElse(new com.portal.api.notes.Note()).user == @userRepository.findByEmail(authentication.principal).get())")
-    NoteDTO getNoteById(@PathVariable("id") Long id) throws NotesNotFoundException {
-        //        return ResponseEntity.ok(noteDTO);
-        return this.noteService.getNoteById(id).orElseThrow(() -> new NotesNotFoundException(NOTE_NOT_FOUND_FOR_ID));
-    }
-
-    @GetMapping("/api/notes/users/{id}")
-    Page<NoteDTO> getNoteByUserId(@PathVariable("id") Long id, @PageableDefault(size = 20) Pageable paging) {
-        return this.noteService.getNoteByUserId(id, paging);
+    NoteDTO getNoteById(@PathVariable("id") Long id, Authentication authentication) throws NotesNotFoundException {
+        String email = (String) authentication.getPrincipal();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        NoteDTO noteDTO = noteService.getNoteById(id).orElseThrow(() -> new NotesNotFoundException(NOTE_NOT_FOUND_FOR_ID));
+        if (role.equals(Role.USER.name()) && email.equals(noteDTO.getAuthorEmail())) {
+            return noteDTO;
+        } else if (role.equals(Role.ADMIN.name()) || role.equals(Role.MODERATOR.name())) {
+            return noteService.getNoteById(id).orElseThrow(() -> new NotesNotFoundException(NOTES_NOT_FOUND_FOR_USER));
+        } else {
+            throw new NotesNotFoundException(NOTES_NOT_FOUND_FOR_USER);
+        }
     }
 
     @PostMapping("/api/notes")
-    ResponseEntity<NoteDTO> createNote(@Valid @RequestBody NoteDTO noteDTO) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MODERATOR', 'USER')")
+    ResponseEntity<NoteDTO> createNote(@Valid @RequestBody NoteDTO noteDTO, Authentication authentication) throws NotesNotFoundException {
+        String email = (String) authentication.getPrincipal();
+        noteDTO.setAuthorEmail(email);
         NoteDTO note = this.noteService.save(noteDTO);
         if (note == null) {
-            return ResponseEntity.badRequest().build();
+            throw new NotesNotFoundException(COULD_NOT_CREATE);
         } else {
-            return new ResponseEntity<NoteDTO>(note, HttpStatus.CREATED);
+            URI location = URI.create(String.format("/notes/%d", note.getId()));
+            return ResponseEntity.created(location).build();
         }
     }
 
     @PutMapping("/api/notes/{id}")
-    ResponseEntity<Note> updateNote(@Valid @RequestBody NoteDTO noteDTO) {
-        Note note = this.noteService.update(noteDTO);
-        if (note == null) {
-            return ResponseEntity.badRequest().build();
+    ResponseEntity<Note> updateNote(@Valid @RequestBody NoteDTO noteDTO, Authentication authentication) throws NotesNotFoundException {
+        String email = (String) authentication.getPrincipal();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+
+        NoteDTO existingNoteDTO = noteService.getNoteById(noteDTO.getId()).orElseThrow(() -> new NotesNotFoundException(NOTE_NOT_FOUND_FOR_ID));
+
+        if (email.equals(existingNoteDTO.getAuthorEmail())) {
+            Note note = this.noteService.update(noteDTO);
+            URI location = URI.create(String.format("/notes/%d", note.getId()));
+            return ResponseEntity.created(location).build();
+        } else if (role.equals(Role.ADMIN.name()) || role.equals(Role.MODERATOR.name())) {
+            Note note = this.noteService.convert(noteDTO, email);
+            URI location = URI.create(String.format("/notes/%d", note.getId()));
+            return ResponseEntity.created(location).build();
         } else {
-            return new ResponseEntity<Note>(note, HttpStatus.CREATED);
+            throw new NotesNotFoundException(YOU_ARE_NOT_AN_OWNER);
         }
     }
 
     @DeleteMapping("/api/notes/{id}")
-    ResponseEntity<?> deleteNote(@PathVariable Long id) {
-        noteService.deleteById(id);
-        return ResponseEntity.noContent().build();
+    ResponseEntity<?> deleteNote(@PathVariable Long id, Authentication authentication) throws NotesNotFoundException {
+        String email = (String) authentication.getPrincipal();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        NoteDTO noteDTO = noteService.getNoteById(id).orElseThrow(() -> new NotesNotFoundException(NOTE_NOT_FOUND_FOR_ID));
+
+        if (email.equals(noteDTO.getAuthorEmail()) || role.equals(Role.ADMIN.name()) || role.equals(Role.MODERATOR.name())) {
+            noteService.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            throw new NotesNotFoundException(YOU_ARE_NOT_AN_OWNER);
+        }
     }
 }

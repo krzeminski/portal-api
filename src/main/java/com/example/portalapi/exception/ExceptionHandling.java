@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.persistence.NoResultException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -29,7 +28,6 @@ import java.util.Objects;
 import static com.example.portalapi.constant.ExceptionConstant.ACCOUNT_DISABLED;
 import static com.example.portalapi.constant.ExceptionConstant.ACCOUNT_LOCKED;
 import static com.example.portalapi.constant.ExceptionConstant.ERROR_PATH;
-import static com.example.portalapi.constant.ExceptionConstant.ERROR_PROCESSING_FILE;
 import static com.example.portalapi.constant.ExceptionConstant.INCORRECT_CREDENTIALS;
 import static com.example.portalapi.constant.ExceptionConstant.INTERNAL_SERVER_ERROR_MSG;
 import static com.example.portalapi.constant.ExceptionConstant.METHOD_IS_NOT_ALLOWED;
@@ -129,12 +127,6 @@ public class ExceptionHandling implements ErrorController {
     public ResponseEntity<HttpResponse> notFoundException(NoResultException exception) {
         LOGGER.error(exception.getMessage());
         return createHttpResponse(NOT_FOUND, exception.getMessage());
-    }
-
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<HttpResponse> iOException(IOException exception) {
-        LOGGER.error(exception.getMessage());
-        return createHttpResponse(INTERNAL_SERVER_ERROR, ERROR_PROCESSING_FILE);
     }
 
     private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message) {
